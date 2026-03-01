@@ -17,7 +17,7 @@ const PLANETS = [
   { id: "ipod", label: "iPod", color: "#e0e0e0", metallic: true, orbit: { radius: 14.5, speed: 0.11, inclination: -0.04, phase: 5.0 } },
   { id: "tv", label: "TV", color: "#8B5E3C", route: "/tv", metallic: false, orbit: { radius: 17, speed: 0.08, inclination: 0.02, phase: 5.8 } },
   { id: "snowboard", label: "Snowboard", color: "#1a8cff", metallic: false, noOrbitRing: true, orbit: { radius: 22, speed: 0.04, inclination: 0.65, phase: 2.5 } },
-  { id: "rv", label: "RV", color: "#cc6633", metallic: false, noOrbitRing: true, orbit: { radius: 19, speed: 0.05, inclination: -0.45, phase: 1.57 } },
+  { id: "rv", label: "RV", color: "#cc6633", metallic: false, noOrbitRing: true, orbit: { radius: 25, speed: 0.03, inclination: -0.6, phase: 4.2 } },
 ];
 /* ───── mobile check ───── */
 const MOBILE_BREAKPOINT = 700;
@@ -331,55 +331,65 @@ function NebulaClouds() {
   /* Each cloud: position, scale, color, opacity, blend mode.
      "additive" sprites create bright glowing areas where they overlap. */
   const clouds = useMemo(() => [
-    /* ── Deep background fills (brighter, larger) ── */
-    { pos: [0, 0, -65], s: 140, color: "#2a1888", op: 0.70 },
-    { pos: [35, 20, -60], s: 110, color: "#3a28a8", op: 0.55 },
-    { pos: [-40, -15, -58], s: 115, color: "#2a1a88", op: 0.55 },
-    { pos: [-20, 30, -62], s: 100, color: "#3228a8", op: 0.50 },
-    { pos: [25, -25, -55], s: 105, color: "#2a2498", op: 0.50 },
+    /* ── Deep background — distributed on a large sphere ── */
+    { pos: [0, 0, -90], s: 140, color: "#2a1888", op: 0.70 },
+    { pos: [50, 40, -70], s: 110, color: "#3a28a8", op: 0.55 },
+    { pos: [-60, -35, -50], s: 115, color: "#2a1a88", op: 0.55 },
+    { pos: [-30, 60, -55], s: 100, color: "#3228a8", op: 0.50 },
+    { pos: [40, -50, -45], s: 105, color: "#2a2498", op: 0.50 },
+    { pos: [0, -70, -40], s: 120, color: "#2a1888", op: 0.45 },
+    { pos: [0, 65, -50], s: 110, color: "#321898", op: 0.45 },
 
-    /* ── Large nebula formations — vibrant purple/blue ── */
-    { pos: [-35, 18, -38], s: 65, color: "#8040d8", op: 0.50 },
-    { pos: [32, -8, -35], s: 60, color: "#3860e8", op: 0.48 },
-    { pos: [-15, -22, -32], s: 58, color: "#6838d0", op: 0.45 },
-    { pos: [18, 22, -36], s: 62, color: "#4050e0", op: 0.42 },
-    { pos: [0, -5, -30], s: 55, color: "#5838c8", op: 0.40 },
-    { pos: [-28, 5, -33], s: 52, color: "#4840d8", op: 0.38 },
-    { pos: [38, 12, -34], s: 50, color: "#5848e0", op: 0.35 },
+    /* ── Large nebula formations — spread across planes ── */
+    { pos: [-50, 30, -40], s: 65, color: "#8040d8", op: 0.50 },
+    { pos: [45, -20, -35], s: 60, color: "#3860e8", op: 0.48 },
+    { pos: [-20, -45, -20], s: 58, color: "#6838d0", op: 0.45 },
+    { pos: [25, 45, -30], s: 62, color: "#4050e0", op: 0.42 },
+    { pos: [55, 10, -15], s: 55, color: "#5838c8", op: 0.40 },
+    { pos: [-55, -10, -25], s: 52, color: "#4840d8", op: 0.38 },
+    { pos: [10, -15, -55], s: 50, color: "#5848e0", op: 0.35 },
+    { pos: [-40, 50, 10], s: 48, color: "#4838c8", op: 0.30 },
+    { pos: [35, -55, 5], s: 45, color: "#5040d0", op: 0.28 },
 
-    /* ── Bright magenta/pink highlights (additive, doubled) ── */
-    { pos: [-32, 14, -28], s: 40, color: "#e060c8", op: 0.40, add: true },
-    { pos: [28, 18, -26], s: 35, color: "#d848f0", op: 0.38, add: true },
-    { pos: [12, -20, -24], s: 32, color: "#f058c0", op: 0.35, add: true },
-    { pos: [-22, -14, -22], s: 30, color: "#c860f8", op: 0.35, add: true },
-    { pos: [38, -5, -30], s: 36, color: "#e068c8", op: 0.30, add: true },
-    { pos: [-8, 28, -27], s: 30, color: "#d050e0", op: 0.28, add: true },
+    /* ── Bright magenta/pink highlights — different heights ── */
+    { pos: [-45, 25, -30], s: 40, color: "#e060c8", op: 0.40, add: true },
+    { pos: [40, 35, -20], s: 35, color: "#d848f0", op: 0.38, add: true },
+    { pos: [15, -40, -15], s: 32, color: "#f058c0", op: 0.35, add: true },
+    { pos: [-30, -30, -25], s: 30, color: "#c860f8", op: 0.35, add: true },
+    { pos: [55, -15, -35], s: 36, color: "#e068c8", op: 0.30, add: true },
+    { pos: [-10, 50, -18], s: 30, color: "#d050e0", op: 0.28, add: true },
+    { pos: [20, 10, 40], s: 28, color: "#e050d0", op: 0.18, add: true },
+    { pos: [-35, -50, 15], s: 32, color: "#d060e8", op: 0.20, add: true },
 
-    /* ── Bright blue/cyan inner glow (more, brighter) ── */
-    { pos: [5, -2, -22], s: 35, color: "#50a0ff", op: 0.30, add: true },
-    { pos: [-20, 8, -20], s: 28, color: "#70b0ff", op: 0.26, add: true },
-    { pos: [22, 10, -19], s: 25, color: "#60a8ff", op: 0.26, add: true },
-    { pos: [0, 15, -21], s: 30, color: "#88ccff", op: 0.22, add: true },
-    { pos: [-10, -12, -18], s: 22, color: "#aaddff", op: 0.20, add: true },
+    /* ── Bright blue/cyan inner glow — orbital ring ── */
+    { pos: [8, -5, -28], s: 35, color: "#50a0ff", op: 0.30, add: true },
+    { pos: [-30, 15, -22], s: 28, color: "#70b0ff", op: 0.26, add: true },
+    { pos: [32, 20, -18], s: 25, color: "#60a8ff", op: 0.26, add: true },
+    { pos: [0, 30, -24], s: 30, color: "#88ccff", op: 0.22, add: true },
+    { pos: [-15, -25, -16], s: 22, color: "#aaddff", op: 0.20, add: true },
+    { pos: [45, 0, 20], s: 24, color: "#60b0ff", op: 0.16, add: true },
+    { pos: [-45, 0, 25], s: 22, color: "#70a8ff", op: 0.14, add: true },
 
-    /* ── Hot bright cores — star-forming regions ── */
-    { pos: [-30, 12, -24], s: 18, color: "#ffa8ff", op: 0.32, add: true },
-    { pos: [25, 14, -22], s: 16, color: "#c0c8ff", op: 0.28, add: true },
-    { pos: [8, -16, -18], s: 14, color: "#ffa8dd", op: 0.26, add: true },
-    { pos: [-14, 22, -26], s: 16, color: "#d0d8ff", op: 0.24, add: true },
-    { pos: [32, -3, -20], s: 12, color: "#ffb8ee", op: 0.22, add: true },
-    { pos: [-5, -10, -16], s: 14, color: "#e0e0ff", op: 0.20, add: true },
+    /* ── Hot bright cores — scattered 3D ── */
+    { pos: [-42, 20, -30], s: 18, color: "#ffa8ff", op: 0.32, add: true },
+    { pos: [35, 25, -25], s: 16, color: "#c0c8ff", op: 0.28, add: true },
+    { pos: [12, -30, -18], s: 14, color: "#ffa8dd", op: 0.26, add: true },
+    { pos: [-20, 40, -32], s: 16, color: "#d0d8ff", op: 0.24, add: true },
+    { pos: [48, -10, -22], s: 12, color: "#ffb8ee", op: 0.22, add: true },
+    { pos: [-8, -18, -14], s: 14, color: "#e0e0ff", op: 0.20, add: true },
 
-    /* ── White/cyan bright cores for Astro Bot vibe ── */
-    { pos: [-25, 10, -22], s: 10, color: "#ffffff", op: 0.18, add: true },
-    { pos: [20, -8, -20], s: 8, color: "#ccffff", op: 0.16, add: true },
-    { pos: [5, 20, -24], s: 9, color: "#ffffff", op: 0.14, add: true },
+    /* ── White/cyan bright cores ── */
+    { pos: [-35, 18, -26], s: 10, color: "#ffffff", op: 0.18, add: true },
+    { pos: [28, -15, -22], s: 8, color: "#ccffff", op: 0.16, add: true },
+    { pos: [8, 35, -28], s: 9, color: "#ffffff", op: 0.14, add: true },
 
-    /* ── Foreground wisps — depth near camera ── */
-    { pos: [42, -10, 5], s: 26, color: "#6040d8", op: 0.12 },
-    { pos: [-35, 20, 8], s: 24, color: "#c058c8", op: 0.10 },
-    { pos: [15, -28, 6], s: 22, color: "#4068e0", op: 0.09 },
-    { pos: [-20, -18, 10], s: 20, color: "#7848d0", op: 0.08 },
+    /* ── Foreground/side wisps — wrap around camera ── */
+    { pos: [60, -15, 10], s: 26, color: "#6040d8", op: 0.12 },
+    { pos: [-55, 30, 15], s: 24, color: "#c058c8", op: 0.10 },
+    { pos: [20, -45, 12], s: 22, color: "#4068e0", op: 0.09 },
+    { pos: [-30, -30, 20], s: 20, color: "#7848d0", op: 0.08 },
+    { pos: [50, 25, 30], s: 22, color: "#5040c8", op: 0.07 },
+    { pos: [-20, 45, 35], s: 20, color: "#6848d0", op: 0.06 },
   ], []);
 
   if (!cloudTex) return null;
@@ -795,21 +805,63 @@ function ResumeModel({ active, onBack, viewMode }) {
   return (
     <group ref={ref}>
       {/* Thick paper block — gives the document physical depth */}
-      <RoundedBox ref={frameRef} args={[2.5, 3.2, 0.08]} radius={0.03} smoothness={4}>
+      <RoundedBox ref={frameRef} args={[3.2, 3.8, 0.08]} radius={0.03} smoothness={4}>
         <meshStandardMaterial color="#f8f6f0" roughness={0.9} />
       </RoundedBox>
 
       {/* Subtle edge shadow line on top face */}
       <mesh position={[0, 0, 0.042]}>
-        <planeGeometry args={[2.45, 3.15]} />
+        <planeGeometry args={[3.15, 3.75]} />
         <meshStandardMaterial color="#ffffff" roughness={0.85} />
       </mesh>
 
-      {/* Resume content — only render HTML when active to prevent z-index overlap */}
+      {/* Resume preview — visible while orbiting */}
+      {!active && <Html
+        position={[0, 0, 0.05]}
+        transform
+        distanceFactor={2}
+        occlude={[frameRef]}
+        zIndexRange={[5, 0]}
+        style={{ pointerEvents: "none" }}
+      >
+        <div style={{
+          width: "560px",
+          height: "720px",
+          padding: "40px 48px",
+          fontFamily: "'Georgia', serif",
+          fontSize: "13px",
+          lineHeight: "1.55",
+          color: "#1a1a2e",
+          background: "transparent",
+          boxSizing: "border-box",
+        }}>
+          <h2 style={{ margin: "0 0 8px", fontSize: "24px", fontWeight: "bold", letterSpacing: "2.5px", textAlign: "center" }}>ENRIQUE CHONG</h2>
+          <p style={{ margin: "0 0 14px", fontSize: "11px", textAlign: "center", color: "#555" }}>
+            echong112@gmail.com &bull; +1-646-203-3814 &bull; New York
+          </p>
+          <p style={{ margin: "0 0 12px", fontSize: "12px", fontStyle: "italic", textAlign: "center", color: "#333" }}>
+            Lead AI Engineer &mdash; 8 years of full-stack engineering
+          </p>
+          <hr style={{ border: "none", borderTop: "1px solid #ccc", margin: "12px 0" }} />
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {[...Array(12)].map((_, i) => (
+              <div key={i} style={{ height: "8px", background: "#e0ddd5", borderRadius: "4px", width: `${70 + Math.sin(i * 2.3) * 25}%` }} />
+            ))}
+          </div>
+          <hr style={{ border: "none", borderTop: "1px solid #ccc", margin: "16px 0" }} />
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {[...Array(8)].map((_, i) => (
+              <div key={i} style={{ height: "8px", background: "#e0ddd5", borderRadius: "4px", width: `${60 + Math.cos(i * 1.7) * 30}%` }} />
+            ))}
+          </div>
+        </div>
+      </Html>}
+
+      {/* Resume content — full detail when active */}
       {active && <Html
         position={[0, 0, 0.05]}
         transform
-        distanceFactor={1.5}
+        distanceFactor={2}
         occlude={[frameRef]}
         zIndexRange={[10, 0]}
         style={{ pointerEvents: active ? "auto" : "none" }}
@@ -863,14 +915,13 @@ function ResumeModel({ active, onBack, viewMode }) {
           </p>
 
           {active && (
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "16px" }}>
-              <button
-                className="tv-back-btn"
-                onClick={() => window.open("https://docs.google.com/document/d/1IfT5WiR6jMDkkhGa14Wf84mP3PCdo_dE9dJb8AJ5pXc/edit?tab=t.0", "_blank")}
-              >
-                Open Doc &rarr;
-              </button>
-            </div>
+            <button
+              className="tv-back-btn"
+              onClick={() => window.open("https://docs.google.com/document/d/1IfT5WiR6jMDkkhGa14Wf84mP3PCdo_dE9dJb8AJ5pXc/edit?tab=t.0", "_blank")}
+              style={{ position: "absolute", top: "40px", left: "10px" }}
+            >
+              Open Doc &rarr;
+            </button>
           )}
         </div>
       </Html>}
@@ -1279,9 +1330,11 @@ function Planet({ planet, onSelect, viewMode, focusedId, tvState, ipodState, onB
     }
 
     const angle = angleRef.current;
-    const x = r * Math.cos(angle);
-    const y = r * Math.sin(angle) * Math.sin(inclination);
-    const z = r * Math.sin(angle) * Math.cos(inclination);
+    const ecc = planet.orbit.eccentricity || 0;
+    const rEcc = ecc > 0 ? r * (1 - ecc * ecc) / (1 + ecc * Math.cos(angle)) : r;
+    const x = rEcc * Math.cos(angle);
+    const y = rEcc * Math.sin(angle) * Math.sin(inclination);
+    const z = rEcc * Math.sin(angle) * Math.cos(inclination);
 
     groupRef.current.position.set(x, y, z);
 
@@ -2143,7 +2196,7 @@ function Scene({ onNavigate, onViewModeChange, onBackRef }) {
 
       {/* Floating decorative GLB models */}
       {/* asteroids.glb meshes are now used in AsteroidBelt */}
-      <FloatingModel url="/models/model2.glb" orbitRadius={30} speed={0.025} inclination={-0.1} phase={4.0} scale={3} tumbleSpeed={0.25} sceneScale={sceneScale} />
+{/* voxel planet removed */}
       {/* RV is now a planet, not a floating model */}
 
       {PLANETS.filter((p) => !p.noOrbitRing).map((p) => (
