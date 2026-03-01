@@ -12,11 +12,12 @@ import TvControls from "./TvControls";
 
 /* ───── planet config (orbital motion) ───── */
 const PLANETS = [
-  { id: "soon1", label: "Number Plates", color: "#555", orbit: { radius: 10, speed: 0.18, inclination: 0.05, phase: 0 } },
-  { id: "resume", label: "Resume", color: "#2a4a6a", metallic: false, orbit: { radius: 12, speed: 0.14, inclination: 0.03, phase: 1.25 } },
-  { id: "ipod", label: "iPod", color: "#e0e0e0", metallic: true, orbit: { radius: 14.5, speed: 0.11, inclination: -0.04, phase: 2.5 } },
-  { id: "tv", label: "TV", color: "#8B5E3C", route: "/tv", metallic: false, orbit: { radius: 17, speed: 0.08, inclination: 0.02, phase: 3.75 } },
-  { id: "snowboard", label: "Snowboard", color: "#1a8cff", metallic: false, noOrbitRing: true, orbit: { radius: 22, speed: 0.04, inclination: 0.65, phase: 5.0 } },
+  { id: "soon1", label: "Number Plates", color: "#555", orbit: { radius: 10, speed: 0.18, inclination: 0.05, phase: 3.5 } },
+  { id: "resume", label: "Resume", color: "#2a4a6a", metallic: false, orbit: { radius: 12, speed: 0.14, inclination: 0.03, phase: 4.2 } },
+  { id: "ipod", label: "iPod", color: "#e0e0e0", metallic: true, orbit: { radius: 14.5, speed: 0.11, inclination: -0.04, phase: 5.0 } },
+  { id: "tv", label: "TV", color: "#8B5E3C", route: "/tv", metallic: false, orbit: { radius: 17, speed: 0.08, inclination: 0.02, phase: 5.8 } },
+  { id: "snowboard", label: "Snowboard", color: "#1a8cff", metallic: false, noOrbitRing: true, orbit: { radius: 22, speed: 0.04, inclination: 0.65, phase: 2.5 } },
+  { id: "rv", label: "RV", color: "#cc6633", metallic: false, noOrbitRing: true, orbit: { radius: 19, speed: 0.05, inclination: -0.45, phase: 1.57 } },
 ];
 /* ───── mobile check ───── */
 const MOBILE_BREAKPOINT = 700;
@@ -44,23 +45,40 @@ function seededRandom(seed) {
 
 function AsteroidBelt({ sceneScale }) {
   const groupRef = useRef();
-  const angleRef = useRef(0);
+  const angleRef = useRef(Math.PI * 0.5); // start directly in front of camera (positive Z)
   const introTime = useRef(0);
-  const introPhase = useRef("fly"); // "fly" → "settle" → "orbit"
   const { scene: asteroidScene } = useGLTF("/models/asteroids.glb");
 
-  /* Extract individual asteroid meshes from the pack */
   const asteroidMeshes = useMemo(() => {
     const meshes = [];
     asteroidScene.traverse((child) => {
-      if (child.isMesh) meshes.push(child);
+      if (child.isMesh) {
+        const cloned = child.clone();
+        cloned.geometry = cloned.geometry.clone();
+        cloned.geometry.computeBoundingBox();
+        const box = cloned.geometry.boundingBox;
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+        cloned.geometry.translate(-center.x, -center.y, -center.z);
+        // Recompute after centering
+        cloned.geometry.computeBoundingBox();
+        const newBox = cloned.geometry.boundingBox;
+        const size = new THREE.Vector3();
+        newBox.getSize(size);
+        cloned.userData.maxDim = Math.max(size.x, size.y, size.z);
+        cloned.userData.topY = newBox.max.y;
+        meshes.push(cloned);
+      }
     });
     return meshes;
   }, [asteroidScene]);
 
+  const ORBIT_RX = 28;
+  const ORBIT_RZ = 16;
+
   const letters = useMemo(() => {
     const text = "ENRIQUE CHONG";
-    const letterSpacing = 1.1;
+    const letterSpacing = 1.4;
     const totalWidth = text.length * letterSpacing;
     const startX = -totalWidth / 2 + letterSpacing / 2;
 
@@ -70,135 +88,74 @@ function AsteroidBelt({ sceneScale }) {
       const entry = {
         ch,
         x: startX + i * letterSpacing,
-        yJitter: (seededRandom(i * 7 + 3) - 0.5) * 0.5,
-        zJitter: (seededRandom(i * 13 + 5) - 0.5) * 0.4,
-        rotZ: (seededRandom(i * 11 + 1) - 0.5) * 0.25,
-        scale: 0.55 + seededRandom(i * 17 + 2) * 0.2,
         asteroidIdx: isSpace ? -1 : meshIdx % asteroidMeshes.length,
-        asteroidScale: 0.04 + seededRandom(i * 23 + 7) * 0.03,
-        asteroidRotSpeed: 0.3 + seededRandom(i * 19 + 11) * 0.5,
-        // Intro fly-in: staggered start from far right
-        introDelay: i * 0.08,
       };
       if (!isSpace) meshIdx++;
       return entry;
     });
-  }, [asteroidMeshes.length]);
-
-  /* Per-letter refs for individual positioning during intro */
-  const letterRefs = useRef([]);
-  const asteroidRefs = useRef([]);
+  }, [asteroidMeshes.length, sceneScale]);
 
   useFrame((_, delta) => {
+    if (!groupRef.current) return;
     const dt = Math.min(delta, 0.05);
     introTime.current += dt;
 
-    if (introPhase.current === "fly") {
-      // Fly-in phase: letters streak across from right to left (2.5s total)
-      let allDone = true;
-      letterRefs.current.forEach((ref, i) => {
-        if (!ref || letters[i].ch === " ") return;
-        const l = letters[i];
-        const t = Math.max(0, introTime.current - l.introDelay);
-        const duration = 2.0;
-        const progress = Math.min(t / duration, 1);
-        const e = easeInOutCubic(progress);
-
-        // Fly from far right to final grouped position
-        const startX = 60 * sceneScale;
-        const startY = (seededRandom(i * 31 + 9) - 0.5) * 15;
-        const endX = l.x;
-        const endY = l.yJitter;
-        const endZ = l.zJitter;
-
-        ref.position.x = THREE.MathUtils.lerp(startX, endX, e);
-        ref.position.y = THREE.MathUtils.lerp(startY, endY, e);
-        ref.position.z = THREE.MathUtils.lerp(-20, endZ, e);
-
-        if (progress < 1) allDone = false;
-      });
-
-      // Tumble asteroids during flight
-      asteroidRefs.current.forEach((ref, i) => {
-        if (!ref) return;
-        ref.rotation.x += dt * 2;
-        ref.rotation.y += dt * 1.5;
-      });
-
-      if (allDone) {
-        introPhase.current = "orbit";
-      }
+    // Intro: hold still briefly so name is readable, then gently start moving
+    // First 2s: nearly still. Then ramp up to cruise over next 3s.
+    const holdTime = 2.0;
+    const rampTime = 3.0;
+    let speed;
+    if (introTime.current < holdTime) {
+      speed = 0.005; // barely moving — name stays visible
     } else {
-      // Normal orbit phase
-      angleRef.current += 0.05 * dt;
-      const a = angleRef.current;
-      const rx = 9 * sceneScale;
-      const rz = 5 * sceneScale;
-      if (groupRef.current) {
-        groupRef.current.position.x = rx * Math.cos(a);
-        groupRef.current.position.z = rz * Math.sin(a);
-        groupRef.current.position.y = 1.5 * Math.sin(a * 0.7);
-        groupRef.current.rotation.y = -a + Math.PI / 2;
-      }
-
-      // Reset individual letter positions to local offset (parent group handles orbit)
-      letterRefs.current.forEach((ref, i) => {
-        if (!ref || letters[i].ch === " ") return;
-        const l = letters[i];
-        ref.position.x = THREE.MathUtils.lerp(ref.position.x, l.x, dt * 3);
-        ref.position.y = THREE.MathUtils.lerp(ref.position.y, l.yJitter, dt * 3);
-        ref.position.z = THREE.MathUtils.lerp(ref.position.z, l.zJitter, dt * 3);
-      });
-
-      // Slow tumble on asteroids
-      asteroidRefs.current.forEach((ref, i) => {
-        if (!ref) return;
-        const l = letters.filter(l => l.ch !== " ")[i];
-        if (!l) return;
-        ref.rotation.x += l.asteroidRotSpeed * dt * 0.3;
-        ref.rotation.y += l.asteroidRotSpeed * dt * 0.2;
-      });
+      const rampProgress = Math.min((introTime.current - holdTime) / rampTime, 1);
+      speed = 0.005 + easeInOutCubic(rampProgress) * 0.025; // ramp to 0.03
     }
-  });
 
-  let meshCount = 0;
+    angleRef.current += speed * dt;
+    const a = angleRef.current;
+    const rx = ORBIT_RX * sceneScale;
+    const rz = ORBIT_RZ * sceneScale;
+
+    groupRef.current.position.x = rx * Math.cos(a);
+    groupRef.current.position.z = rz * Math.sin(a);
+    groupRef.current.position.y = 1.2 * Math.sin(a * 0.5);
+    groupRef.current.rotation.y = -a + Math.PI / 2;
+  });
 
   return (
     <group ref={groupRef}>
       {letters.map((l, i) => {
         if (l.ch === " ") return null;
         const asteroidMesh = asteroidMeshes[l.asteroidIdx];
-        const currentMeshIdx = meshCount++;
+        if (!asteroidMesh) return null;
+        // Scale each asteroid to a uniform 1.5 unit size
+        const targetSize = 1.5;
+        const s = targetSize / asteroidMesh.userData.maxDim;
+        // Letter sits right on top of the rock
+        const topY = asteroidMesh.userData.topY * s - 0.1;
         return (
-          <group
-            key={i}
-            ref={(el) => { letterRefs.current[i] = el; }}
-            position={[60 * sceneScale, 0, -20]}
-          >
-            {/* Asteroid rock */}
-            {asteroidMesh && (
-              <primitive
-                ref={(el) => { asteroidRefs.current[currentMeshIdx] = el; }}
-                object={asteroidMesh.clone()}
-                scale={l.asteroidScale}
-                rotation={[seededRandom(i * 41) * Math.PI, seededRandom(i * 43) * Math.PI, 0]}
-              />
-            )}
-            {/* Letter riding the asteroid */}
+          <group key={i} position={[l.x, 0, 0]}>
+            <primitive
+              object={asteroidMesh.clone()}
+              scale={[s, s, s]}
+            />
             <Text
-              fontSize={l.scale}
+              fontSize={0.55}
               anchorX="center"
               anchorY="middle"
-              position={[0, 0.5, 0]}
-              rotation={[0, 0, l.rotZ]}
+              position={[0, topY, targetSize * 0.6]}
+              rotation={[-0.25, 0, 0]}
+              outlineWidth={0.025}
+              outlineColor="#111"
             >
               {l.ch}
               <meshStandardMaterial
-                color="#9a8a7a"
-                roughness={0.9}
-                metalness={0.15}
-                emissive="#332a1a"
-                emissiveIntensity={0.2}
+                color="#e8d5b0"
+                roughness={0.5}
+                metalness={0.3}
+                emissive="#997744"
+                emissiveIntensity={0.5}
               />
             </Text>
           </group>
@@ -1173,6 +1130,7 @@ function NumberPlatesModel({ viewMode, active }) {
       {active && (
         <Html
           position={[0, 0.2, 0.5]}
+          rotation={[-0.1, 0, 0]}
           transform
           distanceFactor={1.5}
           zIndexRange={[100, 0]}
@@ -1202,6 +1160,71 @@ function NumberPlatesModel({ viewMode, active }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   RV GLB Model
+   ═══════════════════════════════════════════════════════════ */
+function RvModel({ viewMode, active }) {
+  const ref = useRef();
+  const { scene } = useGLTF("/models/rv.glb");
+  const spinSpeed = useRef(0.2);
+
+  useFrame((_, delta) => {
+    if (!ref.current) return;
+    if (viewMode === "rv") {
+      ref.current.rotation.y = THREE.MathUtils.lerp(ref.current.rotation.y, 0, 0.3);
+      spinSpeed.current = 0;
+      return;
+    }
+    if (viewMode === "flyto-rv") {
+      spinSpeed.current = 0;
+      ref.current.rotation.y = THREE.MathUtils.lerp(ref.current.rotation.y, 0, 0.25);
+      return;
+    }
+    if (viewMode === "flyto-galaxy") {
+      spinSpeed.current = THREE.MathUtils.lerp(spinSpeed.current, 0.1, 0.02);
+      ref.current.rotation.y += spinSpeed.current * delta;
+      return;
+    }
+    spinSpeed.current = 0.1;
+    ref.current.rotation.y += delta * 0.1;
+  });
+
+  return (
+    <group ref={ref} scale={[1.5, 1.5, 1.5]}>
+      <primitive object={scene} />
+      {active && (
+        <Html
+          position={[0.15, 0.05, -0.65]}
+          rotation={[0, Math.PI / 2, 0]}
+          transform
+          distanceFactor={0.5}
+          zIndexRange={[100, 0]}
+          style={{ pointerEvents: "auto" }}
+        >
+          <div style={{
+            width: "280px",
+            height: "158px",
+            overflow: "hidden",
+            borderRadius: "4px",
+            boxShadow: "0 0 10px rgba(255,165,0,0.3)",
+          }}>
+            <iframe
+              width="280"
+              height="158"
+              src="https://www.youtube.com/embed/75NjeNWWQ38?autoplay=1&mute=1&loop=1&playlist=75NjeNWWQ38&controls=1&rel=0&modestbranding=1"
+              title="License Plates Video"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ border: "none" }}
+            />
+          </div>
+        </Html>
+      )}
+    </group>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    Planet
    ═══════════════════════════════════════════════════════════ */
 function Planet({ planet, onSelect, viewMode, focusedId, tvState, ipodState, onBack, frozen, planetPositionsRef, sceneScale, onHover }) {
@@ -1217,12 +1240,14 @@ function Planet({ planet, onSelect, viewMode, focusedId, tvState, ipodState, onB
   const isResume = planet.id === "resume";
   const isSnowboard = planet.id === "snowboard";
   const isSoon1 = planet.id === "soon1";
+  const isRv = planet.id === "rv";
   const tvActive = isTv && viewMode === "tv";
   const ipodActive = isIpod && viewMode === "ipod";
   const resumeActive = isResume && viewMode === "resume";
   const snowboardActive = isSnowboard && viewMode === "snowboard";
   const soon1Active = isSoon1 && viewMode === "soon1";
-  const isActive = tvActive || ipodActive || resumeActive || snowboardActive || soon1Active;
+  const rvActive = isRv && viewMode === "rv";
+  const isActive = tvActive || ipodActive || resumeActive || snowboardActive || soon1Active || rvActive;
   const isTransitioning = viewMode.startsWith("flyto-");
 
   // Compute initial position from orbit params to avoid flash
@@ -1304,7 +1329,7 @@ function Planet({ planet, onSelect, viewMode, focusedId, tvState, ipodState, onB
   if (focusedId && planet.id !== focusedId) {
     return <group ref={groupRef} />;
   }
-  const isModel = isIpod || isTv || isResume || isSnowboard || isSoon1;
+  const isModel = isIpod || isTv || isResume || isSnowboard || isSoon1 || isRv;
   const labelY = isModel ? 2.5 : 1.8;
 
   // Disable pointer events during fly animations and active mode
@@ -1384,7 +1409,14 @@ function Planet({ planet, onSelect, viewMode, focusedId, tvState, ipodState, onB
                 <meshBasicMaterial />
               </mesh>
               <NumberPlatesModel viewMode={viewMode} active={soon1Active} />
-              {/* Back button removed — using DOM-level button instead */}
+            </group>
+          ) : isRv ? (
+            <group {...pointerEvents}>
+              <mesh ref={meshRef} visible={false}>
+                <boxGeometry args={[2, 2, 2]} />
+                <meshBasicMaterial />
+              </mesh>
+              <RvModel viewMode={viewMode} active={rvActive} />
             </group>
           ) : (
             <>
@@ -1437,7 +1469,7 @@ function CameraController({ viewMode, onArrived, planetPositionsRef, sceneScale 
   const baseZ = 25 * sceneScale;
   const zDist = useRef(baseZ);
   const targetZ = useRef(baseZ);
-  const entryStart = useRef(new THREE.Vector3(0, 5, 45 * sceneScale));
+  const entryStart = useRef(new THREE.Vector3(0, 2, 30 * sceneScale));
   const savedCamPos = useRef(new THREE.Vector3(0, 0, baseZ));
   const flyStartPos = useRef(new THREE.Vector3());
   const flyStartLook = useRef(new THREE.Vector3());
@@ -1601,6 +1633,17 @@ function CameraController({ viewMode, onArrived, planetPositionsRef, sceneScale 
       time.current = 0;
     } else if (viewMode === "soon1") {
       phase.current = "soon1-view";
+    } else if (viewMode === "flyto-rv") {
+      const pos = planetPositionsRef.current.rv;
+      if (!pos) return;
+      flyTargetPos.current.copy(pos);
+      savedCamPos.current.copy(camera.position);
+      flyStartPos.current.copy(camera.position);
+      flyStartLook.current.set(panOffset.current.x, panOffset.current.y, 0);
+      phase.current = "flyto-rv";
+      time.current = 0;
+    } else if (viewMode === "rv") {
+      phase.current = "rv-view";
     } else if (viewMode === "flyto-snowboard") {
       const pos = planetPositionsRef.current.snowboard;
       if (!pos) return;
@@ -1652,6 +1695,12 @@ function CameraController({ viewMode, onArrived, planetPositionsRef, sceneScale 
           flyTargetPos.current.copy(pos);
           flyStartLook.current.set(pos.x, pos.y, pos.z);
         }
+      } else if (phase.current === "rv-view") {
+        const pos = planetPositionsRef.current.rv;
+        if (pos) {
+          flyTargetPos.current.copy(pos);
+          flyStartLook.current.set(pos.x, pos.y, pos.z);
+        }
       }
       phase.current = "return-to-galaxy";
       time.current = 0;
@@ -1667,12 +1716,16 @@ function CameraController({ viewMode, onArrived, planetPositionsRef, sceneScale 
 
     if (phase.current === "entry") {
       time.current += dt;
-      const progress = Math.min(time.current / 3.0, 1);
+      const duration = 3.5;
+      const progress = Math.min(time.current / duration, 1);
       const e = easeInOutCubic(progress);
       camera.position.x = THREE.MathUtils.lerp(entryStart.current.x, 0, e);
       camera.position.y = THREE.MathUtils.lerp(entryStart.current.y, 0, e);
       camera.position.z = THREE.MathUtils.lerp(entryStart.current.z, baseZ, e);
-      camera.lookAt(0, 0, 0);
+      // Look toward incoming asteroids first, then pan to center
+      const lookX = THREE.MathUtils.lerp(0, 0, e);
+      const lookY = THREE.MathUtils.lerp(0, 0, e);
+      camera.lookAt(lookX, lookY, 0);
       if (progress >= 1) {
         phase.current = "idle";
         time.current = 0;
@@ -1808,6 +1861,37 @@ function CameraController({ viewMode, onArrived, planetPositionsRef, sceneScale 
     } else if (phase.current === "soon1-view") {
       camera.position.set(tp.x, tp.y + 0.5, tp.z + 3.0);
       camera.lookAt(tp.x, tp.y, tp.z);
+    } else if (phase.current === "flyto-rv") {
+      time.current += dt;
+      const duration = 2.8;
+      const progress = Math.min(time.current / duration, 1);
+      const e = easeInOutCubic(progress);
+
+      const vidX = tp.x + 0.225;
+      const vidY = tp.y + 0.075;
+      const vidZ = tp.z - 0.825;
+      const goalX = vidX + 0.5;
+      const goalY = vidY;
+      const goalZ = vidZ;
+
+      camera.position.x = THREE.MathUtils.lerp(flyStartPos.current.x, goalX, e);
+      camera.position.y = THREE.MathUtils.lerp(flyStartPos.current.y, goalY, e);
+      camera.position.z = THREE.MathUtils.lerp(flyStartPos.current.z, goalZ, e);
+
+      _lookTarget.current.x = THREE.MathUtils.lerp(flyStartLook.current.x, vidX, e);
+      _lookTarget.current.y = THREE.MathUtils.lerp(flyStartLook.current.y, vidY, e);
+      _lookTarget.current.z = THREE.MathUtils.lerp(flyStartLook.current.z, vidZ, e);
+      camera.lookAt(_lookTarget.current);
+
+      if (progress >= 1) {
+        onArrived();
+      }
+    } else if (phase.current === "rv-view") {
+      const vidX = tp.x + 0.225;
+      const vidY = tp.y + 0.075;
+      const vidZ = tp.z - 0.825;
+      camera.position.set(vidX + 0.5, vidY, vidZ);
+      camera.lookAt(vidX, vidY, vidZ);
     } else if (phase.current === "return-to-galaxy") {
       time.current += dt;
       const duration = 2.5;
@@ -1922,6 +2006,7 @@ function Scene({ onNavigate, onViewModeChange, onBackRef }) {
     if (viewMode === "flyto-resume" || viewMode === "resume") return "resume";
     if (viewMode === "flyto-snowboard" || viewMode === "snowboard") return "snowboard";
     if (viewMode === "flyto-soon1" || viewMode === "soon1") return "soon1";
+    if (viewMode === "flyto-rv" || viewMode === "rv") return "rv";
     if (viewMode === "flyto-galaxy" && flyTarget) return flyTarget.id;
     return null;
   }, [viewMode, flyTarget]);
@@ -1948,6 +2033,9 @@ function Scene({ onNavigate, onViewModeChange, onBackRef }) {
     } else if (planet.id === "soon1") {
       setFlyTarget(planet);
       setViewMode("flyto-soon1");
+    } else if (planet.id === "rv") {
+      setFlyTarget(planet);
+      setViewMode("flyto-rv");
     } else {
       setFlyTarget(planet);
     }
@@ -1964,6 +2052,8 @@ function Scene({ onNavigate, onViewModeChange, onBackRef }) {
       setViewMode("snowboard");
     } else if (viewMode === "flyto-soon1") {
       setViewMode("soon1");
+    } else if (viewMode === "flyto-rv") {
+      setViewMode("rv");
     } else if (viewMode === "flyto-galaxy") {
       setViewMode("galaxy");
       setFlyTarget(null);
@@ -1983,6 +2073,8 @@ function Scene({ onNavigate, onViewModeChange, onBackRef }) {
     } else if (viewMode === "snowboard") {
       setViewMode("flyto-galaxy");
     } else if (viewMode === "soon1") {
+      setViewMode("flyto-galaxy");
+    } else if (viewMode === "rv") {
       setViewMode("flyto-galaxy");
     }
   }, [viewMode, setViewMode, ipodState]);
@@ -2052,6 +2144,7 @@ function Scene({ onNavigate, onViewModeChange, onBackRef }) {
       {/* Floating decorative GLB models */}
       {/* asteroids.glb meshes are now used in AsteroidBelt */}
       <FloatingModel url="/models/model2.glb" orbitRadius={30} speed={0.025} inclination={-0.1} phase={4.0} scale={3} tumbleSpeed={0.25} sceneScale={sceneScale} />
+      {/* RV is now a planet, not a floating model */}
 
       {PLANETS.filter((p) => !p.noOrbitRing).map((p) => (
         <OrbitRing key={`ring-${p.id}`} radius={p.orbit.radius * sceneScale} inclination={p.orbit.inclination} planet={p} onSelect={handleSelect} hoveredPlanetId={hoveredPlanetId} />
@@ -2064,7 +2157,8 @@ function Scene({ onNavigate, onViewModeChange, onBackRef }) {
           (p.id === "tv" && (viewMode === "flyto-tv" || viewMode === "tv" || (viewMode === "flyto-galaxy" && flyTarget?.id === "tv"))) ||
           (p.id === "resume" && (viewMode === "flyto-resume" || viewMode === "resume" || (viewMode === "flyto-galaxy" && flyTarget?.id === "resume"))) ||
           (p.id === "snowboard" && (viewMode === "flyto-snowboard" || viewMode === "snowboard" || (viewMode === "flyto-galaxy" && flyTarget?.id === "snowboard"))) ||
-          (p.id === "soon1" && (viewMode === "flyto-soon1" || viewMode === "soon1" || (viewMode === "flyto-galaxy" && flyTarget?.id === "soon1")));
+          (p.id === "soon1" && (viewMode === "flyto-soon1" || viewMode === "soon1" || (viewMode === "flyto-galaxy" && flyTarget?.id === "soon1"))) ||
+          (p.id === "rv" && (viewMode === "flyto-rv" || viewMode === "rv" || (viewMode === "flyto-galaxy" && flyTarget?.id === "rv")));
 
         return (
           <Planet
@@ -2075,7 +2169,7 @@ function Scene({ onNavigate, onViewModeChange, onBackRef }) {
             focusedId={focusedId}
             tvState={p.id === "tv" ? tvState : undefined}
             ipodState={p.id === "ipod" ? ipodState : undefined}
-            onBack={(p.id === "tv" || p.id === "ipod" || p.id === "resume" || p.id === "soon1") ? handleBack : undefined}
+            onBack={(p.id === "tv" || p.id === "ipod" || p.id === "resume" || p.id === "soon1" || p.id === "rv") ? handleBack : undefined}
             frozen={isFrozen}
             planetPositionsRef={planetPositionsRef}
             sceneScale={sceneScale}
@@ -2121,14 +2215,10 @@ export default function Galaxy() {
 
   return (
     <div className="galaxy-wrapper">
-      {/* overlay text — hide when not in galaxy mode */}
-      <div className="galaxy-overlay" style={{ opacity: viewMode !== "galaxy" ? 0 : 1, transition: "opacity 0.5s" }}>
-        <h1 className="galaxy-title">Enrique Chong</h1>
-        <p className="galaxy-subtitle">Select a planet to explore</p>
-      </div>
+      {/* overlay text removed — name is on asteroids now */}
 
       {/* DOM-level Back button — works reliably on touch devices */}
-      {(viewMode === "tv" || viewMode === "ipod" || viewMode === "resume" || viewMode === "snowboard" || viewMode === "soon1") && (
+      {(viewMode === "tv" || viewMode === "ipod" || viewMode === "resume" || viewMode === "snowboard" || viewMode === "soon1" || viewMode === "rv") && (
         <button className="dom-back-btn" onClick={handleDomBack}>
           &larr; Back
         </button>
