@@ -1,0 +1,1662 @@
+/* ===== Reset ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html {
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'PT Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
+}
+a { color: inherit; text-decoration: none; }
+
+/* ===== View Switcher ===== */
+.view-switcher {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  gap: 0;
+  background: rgba(30,30,30,0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 24px;
+  padding: 4px;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.view-switcher a {
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  transition: all 0.25s;
+  border: none;
+  color: rgba(255,255,255,0.45);
+}
+.view-switcher a:hover {
+  color: rgba(255,255,255,0.8);
+}
+.view-switcher a.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  box-shadow: 0 1px 8px rgba(255,255,255,0.08);
+}
+
+/* ==================================================================
+   iPod View
+   ================================================================== */
+
+.ipod-page {
+  background: #1a1a2e;
+  color: #222;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.ipod-app-container {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.ipod {
+  width: 320px;
+  height: 540px;
+  background: linear-gradient(145deg, #f0f0f0, #d4d4d4);
+  border: 2px solid #c0c0c0;
+  border-radius: 28px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ipod .bezel { width: 100%; padding: 18px 16px 10px; }
+
+.ipod .screen {
+  width: 100%; height: 210px;
+  border: 3px solid #111; border-radius: 5px;
+  overflow: hidden; background: #c8d8e4; position: relative;
+}
+
+.ipod .status-bar {
+  height: 24px;
+  background: linear-gradient(180deg, #d3e2f8, #ceddf3 50%, rgba(141,164,178,0.68));
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 6px; position: relative; z-index: 2; border-bottom: 1px solid #a0b0c0;
+}
+.ipod .status-bar__title { font-weight: 900; font-size: 14px; }
+.ipod .status-bar .status { position: absolute; left: 6px; width: 18px; height: 18px; }
+
+.ipod .play-indicator {
+  display: none; width: 0; height: 0;
+  border-top: 8px solid transparent; border-left: 14px solid #036ee9; border-bottom: 8px solid transparent;
+}
+.ipod .play-indicator.visible { display: block; }
+.ipod .status-bar .battery { position: absolute; right: 6px; display: flex; align-items: center; }
+
+.ipod .screen-content { height: calc(100% - 24px); position: relative; overflow: hidden; }
+
+.ipod .page {
+  position: absolute; width: 100%; height: 100%;
+  overflow-y: auto; overflow-x: hidden;
+  background: #c8d8e4; -webkit-overflow-scrolling: touch;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+.ipod .page.no-scroll { overflow: hidden; }
+.ipod .page-container { padding: 6px 8px; }
+
+.ipod .page.slide-in-right  { animation: ipodSlideInRight 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; }
+.ipod .page.slide-out-left  { animation: ipodSlideOutLeft 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; }
+.ipod .page.slide-in-left   { animation: ipodSlideInLeft 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; }
+.ipod .page.slide-out-right { animation: ipodSlideOutRight 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; }
+
+@keyframes ipodSlideInRight  { from { transform: translate3d(100%, 0, 0); } to { transform: translate3d(0, 0, 0); } }
+@keyframes ipodSlideOutLeft  { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-100%, 0, 0); } }
+@keyframes ipodSlideInLeft   { from { transform: translate3d(-100%, 0, 0); } to { transform: translate3d(0, 0, 0); } }
+@keyframes ipodSlideOutRight { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(100%, 0, 0); } }
+
+.ipod .menu-item {
+  display: block; font-weight: 700; font-size: 14px;
+  padding: 3px 8px; cursor: pointer; position: relative;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 20px;
+}
+.ipod .menu-item::after { content: ">"; position: absolute; right: 8px; top: 3px; }
+.ipod .menu-item.active { background: #036ee9; color: #fff; }
+
+.ipod .wheel-container {
+  flex: 1; display: flex; align-items: center; justify-content: center; padding: 8px 0 18px;
+}
+.ipod .wheel {
+  width: 200px; height: 200px; border-radius: 50%;
+  background: linear-gradient(145deg, #e8e8e8, #d0d0d0);
+  position: relative; cursor: pointer;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.15);
+  touch-action: none;
+}
+.ipod .wheel.touching { background: linear-gradient(145deg, #e0e0e0, #c8c8c8); }
+.ipod .wheel-center {
+  width: 64px; height: 64px;
+  background: linear-gradient(145deg, #f5f5f5, #e0e0e0);
+  border-radius: 50%; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%); z-index: 2; cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.8);
+}
+.ipod .wheel-center:active { background: linear-gradient(145deg, #ddd, #ccc); }
+
+.ipod .wheel-btn {
+  position: absolute; font-weight: 700; font-size: 11px; color: #555;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1; cursor: pointer; width: 50px; height: 30px;
+}
+.ipod .wheel-btn-menu { top: 12px; left: 50%; transform: translateX(-50%); letter-spacing: 1px; }
+.ipod .wheel-btn-next { right: 10px; top: 50%; transform: translateY(-50%); }
+.ipod .wheel-btn-prev { left: 10px; top: 50%; transform: translateY(-50%); }
+.ipod .wheel-btn-play { bottom: 10px; left: 50%; transform: translateX(-50%); }
+.ipod .wheel-btn:active, .ipod .wheel-btn:hover { color: #036ee9; }
+
+.ipod .page h3 { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+.ipod .page h4 { font-weight: 700; font-size: 13px; margin-top: 6px; }
+.ipod .page p, .ipod .page li { font-size: 12px; line-height: 1.4; }
+.ipod .page .smaller-p { font-size: 11px; }
+.ipod .page .tenure { font-size: 11px; color: #555; }
+.ipod .page ul { list-style: none; padding-left: 8px; }
+.ipod .page ul li::before { content: "\2022 "; color: #036ee9; }
+
+.ipod .skill-group { padding-top: 6px; }
+.ipod .skill-group h4 { font-size: 12px; margin-bottom: 1px; }
+.ipod .skill-group p { font-size: 14px; color: #444; }
+
+.ipod .now-playing { display: flex; flex-direction: column; height: 100%; padding: 4px 8px; }
+.ipod .artwork-row { display: flex; align-items: center; flex: 1; min-height: 0; }
+.ipod .artwork-image { width: 33%; padding-right: 8px; flex-shrink: 0; }
+.ipod .artwork-image img { width: 100%; border-radius: 2px; display: block; }
+.ipod .track-meta { flex: 1; min-width: 0; }
+.ipod .track-meta p { font-weight: 700; font-size: 12px; padding-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ipod .track-meta p.artist, .ipod .track-meta p.album { font-weight: 400; font-size: 11px; color: #444; }
+.ipod .progress-bar { height: 12px; width: 100%; background: linear-gradient(180deg, #fff 34%, #bebebe 47%, #fff 57%); border: 1px solid #c5c5c5; overflow: hidden; position: relative; border-radius: 2px; margin-top: 4px; flex-shrink: 0; }
+.ipod .progress-bar .progress { height: 100%; width: 0%; background: rgba(3, 110, 233, 0.85); transition: width 0.5s linear; }
+.ipod .progress-times { display: flex; justify-content: space-between; font-size: 9px; color: #555; padding-top: 1px; flex-shrink: 0; }
+
+.ipod-help-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  z-index: 9999;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.ipod-help-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+.ipod-instructions {
+  position: fixed;
+  bottom: 120px;
+  right: 20px;
+  z-index: 9999;
+  color: #aaa;
+  font-size: 12px;
+  line-height: 1.8;
+  background: rgba(20,20,40,0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.ipod-instructions strong { color: #ccc; }
+.ipod-instructions span { font-weight: 700; color: #ddd; }
+
+@media (max-width: 700px) {
+  .ipod-instructions { text-align: center; padding: 0 20px 20px; font-size: 12px; line-height: 1.8; }
+}
+@media (max-width: 360px) {
+  .ipod { width: 280px; height: 480px; border-radius: 22px; }
+  .ipod .screen { height: 185px; }
+  .ipod .wheel { width: 170px; height: 170px; }
+  .ipod .wheel-center { width: 54px; height: 54px; }
+}
+
+
+/* ==================================================================
+   iPod 3D Canvas Overlays (Three.js Html)
+   ================================================================== */
+
+.ipod-canvas-screen {
+  width: 220px;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ipod-canvas-screen .screen {
+  width: 100%;
+  height: 160px;
+  border: 2px solid #111;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #c8d8e4;
+  position: relative;
+}
+
+.ipod-canvas-screen .status-bar {
+  height: 20px;
+  background: linear-gradient(180deg, #d3e2f8, #ceddf3 50%, rgba(141,164,178,0.68));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  position: relative;
+  z-index: 2;
+  border-bottom: 1px solid #a0b0c0;
+}
+
+.ipod-canvas-screen .status-bar__title {
+  font-weight: 900;
+  font-size: 11px;
+  color: #222;
+}
+
+.ipod-canvas-screen .status-bar .status {
+  position: absolute;
+  left: 5px;
+  width: 14px;
+  height: 14px;
+}
+
+.ipod-canvas-screen .play-indicator {
+  display: none;
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-left: 10px solid #036ee9;
+  border-bottom: 6px solid transparent;
+}
+
+.ipod-canvas-screen .play-indicator.visible {
+  display: block;
+}
+
+.ipod-canvas-screen .status-bar .battery {
+  position: absolute;
+  right: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.ipod-canvas-screen .status-bar .battery svg {
+  width: 20px;
+  height: 10px;
+}
+
+.ipod-canvas-screen .screen-content {
+  height: calc(100% - 20px);
+  position: relative;
+  overflow: hidden;
+}
+
+.ipod-canvas-screen .page {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #c8d8e4;
+  -webkit-overflow-scrolling: touch;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+.ipod-canvas-screen .page.no-scroll {
+  overflow: hidden;
+}
+
+.ipod-canvas-screen .page-container {
+  padding: 4px 6px;
+}
+
+.ipod-canvas-screen .page.slide-in-right  { animation: ipodSlideInRight 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; }
+.ipod-canvas-screen .page.slide-out-left  { animation: ipodSlideOutLeft 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; }
+.ipod-canvas-screen .page.slide-in-left   { animation: ipodSlideInLeft 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; }
+.ipod-canvas-screen .page.slide-out-right { animation: ipodSlideOutRight 0.3s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; }
+
+.ipod-canvas-screen .menu-item {
+  display: block;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 2px 6px;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 16px;
+  color: #222;
+}
+
+.ipod-canvas-screen .menu-item::after {
+  content: ">";
+  position: absolute;
+  right: 6px;
+  top: 2px;
+}
+
+.ipod-canvas-screen .menu-item.active {
+  background: #036ee9;
+  color: #fff;
+}
+
+.ipod-canvas-screen .page h3 {
+  font-weight: 700;
+  font-size: 11px;
+  margin-bottom: 2px;
+  color: #222;
+}
+
+.ipod-canvas-screen .page h4 {
+  font-weight: 700;
+  font-size: 10px;
+  margin-top: 4px;
+  color: #222;
+}
+
+.ipod-canvas-screen .page p,
+.ipod-canvas-screen .page li {
+  font-size: 10px;
+  line-height: 1.3;
+  color: #222;
+}
+
+.ipod-canvas-screen .page .smaller-p {
+  font-size: 9px;
+}
+
+.ipod-canvas-screen .page .tenure {
+  font-size: 9px;
+  color: #555;
+}
+
+.ipod-canvas-screen .page ul {
+  list-style: none;
+  padding-left: 6px;
+}
+
+.ipod-canvas-screen .page ul li::before {
+  content: "\2022 ";
+  color: #036ee9;
+}
+
+.ipod-canvas-screen .skill-group {
+  padding-top: 4px;
+}
+
+.ipod-canvas-screen .skill-group h4 {
+  font-size: 10px;
+  margin-bottom: 1px;
+}
+
+.ipod-canvas-screen .skill-group p {
+  font-size: 11px;
+  color: #444;
+}
+
+.ipod-canvas-screen .now-playing {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 3px 6px;
+}
+
+.ipod-canvas-screen .artwork-row {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+}
+
+.ipod-canvas-screen .artwork-image {
+  width: 33%;
+  padding-right: 6px;
+  flex-shrink: 0;
+}
+
+.ipod-canvas-screen .artwork-image img {
+  width: 100%;
+  border-radius: 2px;
+  display: block;
+}
+
+.ipod-canvas-screen .track-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.ipod-canvas-screen .track-meta p {
+  font-weight: 700;
+  font-size: 10px;
+  padding-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ipod-canvas-screen .track-meta p.artist,
+.ipod-canvas-screen .track-meta p.album {
+  font-weight: 400;
+  font-size: 9px;
+  color: #444;
+}
+
+.ipod-canvas-screen .progress-bar {
+  height: 10px;
+  width: 100%;
+  background: linear-gradient(180deg, #fff 34%, #bebebe 47%, #fff 57%);
+  border: 1px solid #c5c5c5;
+  overflow: hidden;
+  position: relative;
+  border-radius: 2px;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.ipod-canvas-screen .progress-bar .progress {
+  height: 100%;
+  width: 0%;
+  background: rgba(3, 110, 233, 0.85);
+  transition: width 0.5s linear;
+}
+
+.ipod-canvas-screen .progress-times {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: #555;
+  padding-top: 1px;
+  flex-shrink: 0;
+}
+
+/* ---- Click wheel overlay ---- */
+
+.ipod-canvas-wheel {
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ipod-canvas-wheel .wheel {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(232,232,232,0.15), rgba(208,208,208,0.15));
+  position: relative;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.ipod-canvas-wheel .wheel.touching {
+  background: linear-gradient(145deg, rgba(224,224,224,0.2), rgba(200,200,200,0.2));
+}
+
+.ipod-canvas-wheel .wheel-center {
+  width: 56px;
+  height: 56px;
+  background: transparent;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  cursor: pointer;
+}
+
+.ipod-canvas-wheel .wheel-center:active {
+  background: rgba(200,200,200,0.15);
+}
+
+.ipod-canvas-wheel .wheel-btn {
+  position: absolute;
+  font-weight: 700;
+  font-size: 10px;
+  color: rgba(85,85,85,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  cursor: pointer;
+  width: 44px;
+  height: 26px;
+}
+
+.ipod-canvas-wheel .wheel-btn-menu {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  letter-spacing: 1px;
+}
+
+.ipod-canvas-wheel .wheel-btn-next {
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.ipod-canvas-wheel .wheel-btn-prev {
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.ipod-canvas-wheel .wheel-btn-play {
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.ipod-canvas-wheel .wheel-btn:active,
+.ipod-canvas-wheel .wheel-btn:hover {
+  color: #036ee9;
+}
+
+/* ---- iPod 3D responsive ---- */
+@media (min-width: 701px) and (max-width: 1024px) {
+  .ipod-canvas-screen { width: 210px; }
+  .ipod-canvas-screen .screen { height: 155px; }
+  .ipod-canvas-wheel .wheel { width: 170px; height: 170px; }
+  .ipod-canvas-wheel .wheel-center { width: 58px; height: 58px; }
+  .ipod-canvas-wheel .wheel-btn { font-size: 11px; }
+}
+@media (max-width: 700px) {
+  .ipod-canvas-screen { width: 190px; }
+  .ipod-canvas-screen .screen { height: 140px; }
+  .ipod-canvas-wheel .wheel { width: 155px; height: 155px; }
+  .ipod-canvas-wheel .wheel-center { width: 48px; height: 48px; }
+}
+
+/* ==================================================================
+   TV View — Pure CSS Retro TV
+   ================================================================== */
+
+@font-face {
+  font-family: "retro";
+  src: url("/assets/fonts/Retro Computer_DEMO.ttf");
+}
+
+.tv-page {
+  background: #0a0a0a;
+  color: #fff;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  touch-action: none;
+}
+
+.tv-outer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---- TV Body (wood-grain housing) ---- */
+.tv-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tv-inner {
+  display: flex;
+  width: 820px;
+  height: 500px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(90,58,32,0.12) 0px,
+      rgba(120,78,42,0.08) 2px,
+      transparent 3px,
+      transparent 6px
+    ),
+    linear-gradient(160deg, #5a3a22 0%, #6b4226 20%, #4e2f18 50%, #5c3820 80%, #3d2410 100%);
+  border-radius: 18px;
+  padding: 24px;
+  gap: 20px;
+  box-shadow:
+    0 12px 48px rgba(0,0,0,0.7),
+    0 2px 8px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+  border: 2px solid #2a1a0c;
+  position: relative;
+}
+
+/* ---- Watchman elements (hidden on desktop) ---- */
+.watchman-antenna,
+.watchman-brand,
+.watchman-dial,
+.watchman-sony,
+.watchman-side-buttons {
+  display: none;
+}
+
+/* Speaker is at bottom-right on desktop, reordered on mobile via CSS order */
+.tv-speaker { order: 0; }
+
+/* ---- Screen Section ---- */
+.tv-screen-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tv-bezel {
+  flex: 1;
+  background: #1a1209;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow:
+    inset 0 3px 12px rgba(0,0,0,0.8),
+    0 1px 0 rgba(255,255,255,0.05);
+}
+
+.tv-screen {
+  width: 100%;
+  height: 100%;
+  background: #111;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    inset 0 0 60px rgba(0,0,0,0.5),
+    0 0 2px rgba(100,200,255,0.1);
+}
+
+/* CRT power-off animation: shrink to horizontal line then dot */
+.tv-screen.power-off {
+  animation: crtOff 0.6s ease-in forwards;
+}
+@keyframes crtOff {
+  0%   { filter: brightness(1); transform: scale(1,1); }
+  40%  { filter: brightness(1.5); transform: scale(1, 0.005); }
+  70%  { filter: brightness(2); transform: scale(0.2, 0.005); }
+  100% { filter: brightness(0); transform: scale(0, 0); }
+}
+
+/* CRT power-on animation */
+.tv-screen.power-on {
+  animation: crtOn 0.8s ease-out forwards;
+}
+@keyframes crtOn {
+  0%   { filter: brightness(0); transform: scale(0, 0); }
+  30%  { filter: brightness(2); transform: scale(0.2, 0.005); }
+  60%  { filter: brightness(1.5); transform: scale(1, 0.005); }
+  100% { filter: brightness(1); transform: scale(1, 1); }
+}
+
+/* Static noise overlay */
+.tv-static {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: url('/assets/img/static.gif') repeat;
+  opacity: 0;
+  z-index: 4;
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+.tv-static.visible { opacity: 0.6; }
+
+/* YouTube iframe container */
+.tv-video-container {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 1;
+}
+.tv-video-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* CRT scanlines */
+.crt-scanlines {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.15) 2px,
+    rgba(0,0,0,0.15) 4px
+  );
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* CRT vignette */
+.crt-vignette {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(0,0,0,0.35) 85%,
+    rgba(0,0,0,0.7) 100%
+  );
+  z-index: 6;
+  pointer-events: none;
+}
+
+/* Channel indicator overlay */
+.tv-channel-indicator {
+  font-family: 'retro', monospace;
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  text-align: right;
+  padding: 6px 4px 0;
+}
+
+/* ---- Right Control Panel ---- */
+.tv-control-panel {
+  width: 180px;
+  flex-shrink: 0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%),
+    #2a1a0c;
+  border-radius: 10px;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+}
+
+/* Power knob */
+.tv-power-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid #1a1a1a;
+  background:
+    radial-gradient(circle at 35% 35%, rgba(255,255,255,0.12), transparent 60%),
+    conic-gradient(from 0deg, #555, #3a3a3a, #4a4a4a, #333, #555);
+  color: transparent;
+  font-size: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, box-shadow 0.3s;
+  align-self: center;
+  box-shadow:
+    0 3px 8px rgba(0,0,0,0.6),
+    inset 0 1px 2px rgba(255,255,255,0.1),
+    inset 0 -1px 2px rgba(0,0,0,0.4);
+  position: relative;
+  transform: rotate(-45deg);
+}
+.tv-power-btn::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 10px;
+  background: #888;
+  border-radius: 1px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.5);
+}
+.tv-power-btn:hover {
+  box-shadow:
+    0 3px 8px rgba(0,0,0,0.6),
+    inset 0 1px 2px rgba(255,255,255,0.15),
+    inset 0 -1px 2px rgba(0,0,0,0.4);
+}
+.tv-power-btn.on {
+  transform: rotate(45deg);
+}
+.tv-power-btn.on::after {
+  background: #5c5;
+  box-shadow: 0 0 6px rgba(80,200,80,0.5);
+}
+.tv-power-btn .power-icon { display: none; }
+
+/* Channel section */
+.tv-channel-label {
+  font-family: 'retro', monospace;
+  font-size: 8px;
+  color: #666;
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+.tv-channel-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tv-ch-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background: linear-gradient(180deg, #3a3a3a, #252525);
+  color: #999;
+  font-family: 'retro', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.tv-ch-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #4a4a4a, #333);
+  color: #ddd;
+}
+.tv-ch-btn:active:not(:disabled) {
+  background: linear-gradient(180deg, #222, #333);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+  transform: translateY(1px);
+}
+.tv-ch-btn.active {
+  background: linear-gradient(180deg, #c0782a, #8a5018);
+  color: #fff;
+  border-color: #d4923e;
+  box-shadow: 0 0 8px rgba(200,130,50,0.3), 0 2px 4px rgba(0,0,0,0.4);
+}
+.tv-ch-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Sliders */
+.tv-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.tv-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tv-slider-row label {
+  font-size: 8px;
+  font-family: 'retro', monospace;
+  width: 26px;
+  text-align: right;
+  color: #777;
+  flex-shrink: 0;
+}
+
+.tv-slider-row input[type="range"] {
+  flex: 1;
+  min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: #444;
+  border-radius: 2px;
+  outline: none;
+}
+.tv-slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #c0a060, #8a7040);
+  border: 1px solid #6a5030;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.tv-slider-row input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #c0a060, #8a7040);
+  border: 1px solid #6a5030;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.tv-slider-row input[type="range"]:disabled {
+  opacity: 0.3;
+}
+
+/* Speaker grille — hidden on desktop (lives inside control panel on mobile) */
+.tv-speaker {
+  display: none;
+}
+
+.speaker-grille {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 6px;
+}
+
+.speaker-slot {
+  height: 3px;
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,0.6) 0%,
+    rgba(60,40,20,0.3) 50%,
+    rgba(0,0,0,0.5) 100%
+  );
+  border-radius: 2px;
+}
+
+/* ---- TV Feet ---- */
+.tv-feet {
+  display: flex;
+  justify-content: space-between;
+  width: 70%;
+  margin-top: -2px;
+}
+
+.tv-foot {
+  width: 60px;
+  height: 14px;
+  background: linear-gradient(180deg, #3d2410, #2a1a0c);
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+}
+
+/* ---- Responsive: Tablet (701–1024px) ---- */
+@media (min-width: 701px) and (max-width: 1024px) {
+  /* TV body scales to fit tablet viewport */
+  .tv-inner {
+    width: 680px;
+    height: 420px;
+    padding: 18px;
+    gap: 16px;
+  }
+  .tv-outer { padding-top: 16px; }
+
+  /* Control panel narrower */
+  .tv-control-panel {
+    width: 140px;
+    padding: 12px 10px;
+    gap: 10px;
+  }
+
+  /* Larger touch targets for channel buttons */
+  .tv-ch-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
+  }
+
+  /* Bigger power knob for touch */
+  .tv-power-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* Slider thumbs bigger for touch */
+  .tv-slider-row input[type="range"]::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+  }
+  .tv-slider-row input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* View switcher - bigger touch targets */
+  .view-switcher a {
+    padding: 10px 24px;
+    font-size: 12px;
+  }
+
+  /* Galaxy overlay text */
+  .galaxy-title { font-size: 24px; }
+  .galaxy-subtitle { font-size: 12px; }
+}
+
+/* ==================================================================
+   Responsive: Mobile — Sony Sports Watchman Theme
+   ================================================================== */
+@media (max-width: 700px) {
+  .tv-page {
+    align-items: center;
+    padding: 20px 0;
+    background: linear-gradient(180deg, #1a3a5a 0%, #0d2640 50%, #0a1a30 100%);
+  }
+
+  .tv-outer { padding-top: 0; }
+
+  .tv-body {
+    position: relative;
+  }
+
+  /* ---- Antenna ---- */
+  .watchman-antenna {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    top: -90px;
+    left: 30px;
+    z-index: 2;
+    transform: rotate(-8deg);
+    transform-origin: bottom center;
+  }
+  .antenna-tip {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #e8d44d;
+  }
+  .antenna-rod {
+    width: 4px;
+    height: 80px;
+    background: linear-gradient(180deg, #c0c0c0, #888, #aaa);
+    border-radius: 2px;
+  }
+
+  /* ---- Watchman body ---- */
+  .tv-inner {
+    width: 300px;
+    height: auto;
+    flex-direction: column;
+    background:
+      linear-gradient(160deg, #f5d830 0%, #e8c820 30%, #d4b418 60%, #e0c020 100%);
+    border-radius: 14px;
+    padding: 16px;
+    gap: 8px;
+    border: 3px solid #222;
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.3),
+      4px 0 0 #1a1a1a,
+      -2px 0 0 #1a1a1a;
+    transform: none;
+  }
+
+  /* ---- Speaker grille (diagonal lines) ---- */
+  .tv-speaker {
+    display: block;
+    order: -3;
+    width: 70%;
+    height: 80px;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+  .speaker-grille {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    gap: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 3px,
+      rgba(0,0,0,0.35) 3px,
+      rgba(0,0,0,0.35) 5px
+    );
+  }
+  .speaker-slot { display: none; }
+
+  /* ---- Branding ---- */
+  .watchman-brand {
+    display: flex;
+    flex-direction: column;
+    order: -2;
+    padding: 2px 0;
+  }
+  .watchman-sports {
+    font-family: 'retro', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: #c44;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .watchman-name {
+    font-size: 28px;
+    font-weight: 900;
+    font-style: italic;
+    color: #1a3a8a;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  /* ---- Dial strip ---- */
+  .watchman-dial {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    order: -1;
+    background: #1a1a1a;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin: 2px 0;
+  }
+  .dial-label {
+    font-family: 'retro', monospace;
+    font-size: 7px;
+    color: #aaa;
+  }
+  .dial-strip {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'retro', monospace;
+    font-size: 8px;
+    color: #8cf;
+  }
+
+  /* ---- Screen ---- */
+  .tv-screen-wrapper {
+    order: 0;
+    flex: none;
+  }
+  .tv-bezel {
+    background: #111;
+    border-radius: 6px;
+    padding: 8px;
+  }
+  .tv-screen {
+    width: 100%;
+    height: 200px;
+    border-radius: 4px;
+  }
+  .tv-channel-indicator {
+    color: rgba(0,0,0,0.5);
+    font-size: 9px;
+    padding: 4px 2px 0;
+  }
+
+  /* ---- Control panel (below screen) ---- */
+  .tv-control-panel {
+    order: 1;
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: transparent;
+    box-shadow: none;
+    padding: 6px 0 0;
+    border-radius: 0;
+  }
+
+  .tv-power-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+    border-color: #333;
+    background: linear-gradient(145deg, #444, #222);
+  }
+  .tv-power-btn.on {
+    border-color: #4a4;
+    box-shadow: 0 0 6px rgba(80,200,80,0.4);
+  }
+
+  .tv-channel-label { display: none; }
+
+  .tv-channel-buttons {
+    gap: 3px;
+  }
+  .tv-ch-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 9px;
+    border-radius: 3px;
+  }
+  .tv-ch-btn.active {
+    background: linear-gradient(180deg, #c44, #922);
+    border-color: #e55;
+    box-shadow: 0 0 6px rgba(220,60,60,0.4);
+  }
+
+  .tv-sliders {
+    width: 100%;
+    flex-direction: row;
+    gap: 8px;
+  }
+  .tv-slider-row {
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .tv-slider-row label {
+    width: auto;
+    text-align: center;
+    font-size: 7px;
+    color: #555;
+  }
+  .tv-slider-row input[type="range"] {
+    width: 100%;
+    height: 3px;
+    background: #333;
+  }
+  .tv-slider-row input[type="range"]::-webkit-slider-thumb {
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(145deg, #444, #222);
+    border: 1px solid #555;
+  }
+  .tv-slider-row input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(145deg, #444, #222);
+    border: 1px solid #555;
+  }
+
+  /* ---- SONY branding ---- */
+  .watchman-sony {
+    display: block;
+    order: 2;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+    letter-spacing: 6px;
+    padding: 6px 0 2px;
+  }
+
+  /* ---- Side buttons (right edge) ---- */
+  .watchman-side-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: absolute;
+    right: -14px;
+    top: 30px;
+    z-index: 3;
+  }
+  .watchman-side-btn {
+    width: 10px;
+    height: 20px;
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 2px;
+    cursor: pointer;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.4);
+    transition: background 0.15s;
+  }
+  .watchman-side-btn:hover:not(:disabled) { background: #444; }
+  .watchman-side-btn.active { background: #c44; border-color: #e55; }
+  .watchman-side-btn:disabled { opacity: 0.4; }
+
+  /* ---- Hide desktop elements ---- */
+  .tv-feet { display: none; }
+
+  /* CRT effects lighter for small screen */
+  .crt-scanlines {
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(0,0,0,0.1) 1px,
+      rgba(0,0,0,0.1) 2px
+    );
+  }
+}
+
+/* ---- Touch-friendly: tablets & touch devices ---- */
+@media (pointer: coarse) {
+  /* Larger touch targets everywhere */
+  .view-switcher a {
+    padding: 10px 24px;
+    font-size: 12px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .tv-ch-btn {
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .tv-power-btn {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .ipod-help-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .tv-back-btn {
+    padding: 10px 18px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+
+  /* Slider tracks thicker for easier touch */
+  .tv-slider-row input[type="range"] {
+    height: 6px;
+  }
+  .tv-slider-row input[type="range"]::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+  }
+  .tv-slider-row input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* iPad portrait (768px) — specific optimizations */
+@media (min-width: 701px) and (max-width: 850px) {
+  .tv-inner {
+    width: 580px;
+    height: 380px;
+    padding: 14px;
+    gap: 12px;
+  }
+  .tv-control-panel {
+    width: 120px;
+    padding: 10px 8px;
+    gap: 8px;
+  }
+  .tv-bezel { padding: 10px; }
+  .tv-ch-btn { width: 28px; height: 28px; font-size: 9px; }
+  .tv-channel-buttons { gap: 3px; }
+}
+
+/* ==================================================================
+   Galaxy View
+   ================================================================== */
+
+.galaxy-page {
+  background: #1a1060;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  position: relative;
+  touch-action: none;
+}
+
+.galaxy-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #1a1060;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+/* DOM-level Back button — always tappable, outside canvas */
+.dom-back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.7);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  touch-action: auto;
+  -webkit-tap-highlight-color: rgba(255,255,255,0.2);
+  transition: all 0.2s;
+  pointer-events: auto;
+}
+.dom-back-btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+.dom-back-btn:active {
+  transform: scale(0.95);
+  background: rgba(0, 0, 0, 0.9);
+}
+
+/* Allow touch gestures on the Three.js canvas for pinch-zoom & pan */
+.galaxy-wrapper canvas {
+  touch-action: manipulation;
+}
+
+/* Ensure Three.js Html overlays (buttons, controls) receive touch events */
+.galaxy-wrapper div[style*="pointer-events: auto"] {
+  touch-action: auto;
+}
+.tv-back-btn {
+  touch-action: auto;
+  position: relative;
+  z-index: 100;
+}
+
+.galaxy-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  text-align: center;
+  pointer-events: none;
+  touch-action: none;
+  padding: 36px 20px 0;
+}
+
+.galaxy-title {
+  font-size: clamp(18px, 4vw, 28px);
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: clamp(2px, 0.5vw, 4px);
+  text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(255,170,50,0.3);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.galaxy-subtitle {
+  font-size: 13px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 2px;
+  margin-top: 6px;
+}
+
+/* Planet labels */
+.planet-label {
+  font-family: 'PT Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(0,0,0,0.8);
+  white-space: nowrap;
+  padding: 3px 10px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 10px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.planet-label.locked {
+  color: rgba(255,255,255,0.45);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.lock-icon {
+  margin-left: 4px;
+  font-size: 11px;
+}
+
+@media (max-width: 700px) {
+  .galaxy-title { font-size: 20px; letter-spacing: 3px; }
+  .galaxy-subtitle { font-size: 11px; }
+}
+
+/* ==================================================================
+   In-Canvas TV Overlays (Three.js Html)
+   distanceFactor={1.5} — screen bezel is 1.5 x 1.5 world units,
+   control panel is 0.6 x 1.5 world units
+   ================================================================== */
+
+.tv-canvas-screen {
+  width: 400px;
+  pointer-events: auto;
+}
+
+.tv-canvas-screen .tv-screen-wrapper {
+  width: 100%;
+}
+
+.tv-canvas-screen .tv-bezel {
+  background: #1a1209;
+  border-radius: 4px;
+  padding: 3px;
+}
+
+.tv-canvas-screen .tv-screen {
+  width: 100%;
+  height: 220px;
+  border-radius: 3px;
+}
+
+.tv-canvas-screen .tv-channel-indicator {
+  font-size: 9px;
+  padding: 2px 2px 0;
+}
+
+.tv-canvas-controls {
+  width: 140px;
+  pointer-events: auto;
+}
+
+.tv-canvas-controls .tv-control-panel {
+  width: 140px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%),
+    #2a1a0c;
+  border-radius: 8px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.tv-canvas-controls .tv-power-btn {
+  width: 30px;
+  height: 30px;
+}
+
+.tv-canvas-controls .tv-channel-label {
+  font-size: 7px;
+}
+
+.tv-canvas-controls .tv-channel-buttons {
+  gap: 3px;
+}
+
+.tv-canvas-controls .tv-ch-btn {
+  width: 24px;
+  height: 24px;
+  font-size: 8px;
+  border-radius: 3px;
+}
+
+.tv-canvas-controls .tv-sliders {
+  gap: 6px;
+}
+
+.tv-canvas-controls .tv-slider-row label {
+  font-size: 7px;
+  width: 22px;
+}
+
+.tv-canvas-controls .tv-slider-row input[type="range"] {
+  height: 3px;
+}
+
+.tv-canvas-controls .tv-slider-row input[type="range"]::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+}
+
+.tv-canvas-controls .tv-slider-row input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+}
+
+.tv-back-btn {
+  background: rgba(0, 0, 0, 0.6);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 0.2s;
+  white-space: nowrap;
+  pointer-events: auto !important;
+  touch-action: auto;
+  -webkit-tap-highlight-color: rgba(255,255,255,0.2);
+  position: relative;
+  z-index: 9990;
+}
+
+.tv-back-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ---- TV canvas overlays — tablet ---- */
+@media (min-width: 701px) and (max-width: 1024px) {
+  .tv-canvas-controls .tv-ch-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 9px;
+  }
+  .tv-canvas-controls .tv-power-btn {
+    width: 34px;
+    height: 34px;
+  }
+}
